@@ -150,3 +150,30 @@ def points_detection(results):
     # return np.concatenate([lh, rh, po])
 
     return rh
+
+def points_detection_hands(results):
+    xMax = max([i.x for i in results.right_hand_landmarks.landmark])
+    xMin = min([i.x for i in results.right_hand_landmarks.landmark])
+    yMax = max([i.y for i in results.right_hand_landmarks.landmark])
+    yMin = min([i.y for i in results.right_hand_landmarks.landmark])
+    rh = np.array([[points.x, points.y, points.z] for points in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
+    for i in np.arange(0, 63, 3):
+        rh[i]=(rh[i]-xMin)/(xMax-xMin)
+    for i in np.arange(1, 63, 3):
+        rh[i]=(rh[i]-yMin)/(yMax-yMin)
+
+    # xMax = max([i.x for i in results.left_hand_landmarks.landmark])
+    # xMin = min([i.x for i in results.left_hand_landmarks.landmark])
+    # yMax = max([i.y for i in results.left_hand_landmarks.landmark])
+    # yMin = min([i.y for i in results.left_hand_landmarks.landmark])
+    # rh = np.array([[points.x, points.y, points.z] for points in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
+    # for i in np.arange(0, 63, 3):
+    #     rh[i]=(rh[i]-xMin)/(xMax-xMin)
+    # for i in np.arange(1, 63, 3):
+    #     rh[i]=(rh[i]-yMin)/(yMax-yMin)
+
+    # lh = np.array([[points.x, points.y, points.z] for points in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
+    # po = np.array([[points.x, points.y, points.z] for points in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(99)
+    # return np.concatenate([lh, rh, po])
+
+    return rh
