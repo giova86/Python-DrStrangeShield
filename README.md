@@ -65,7 +65,7 @@ optional arguments:
 
 <br>
 <p align="center">
-  <img width="360"  src="./images/position_1.png">
+  <img width="360"  src="./images/position_4.png">
   <figcaption align = "center">Figure 1: First Position].</figcaption>
 </p>
 <br>
