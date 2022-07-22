@@ -41,14 +41,16 @@ optional arguments:
                         is 1
   -s FILE, --shield FILE
                         PATH of the video FILE.
+```
 
 ## Usage
 In order to activate the shields you have to perform a "magical" sequence of hands position.
 
 <br>
 <p align="center">
-  <img width="460"  src="images/position_1.jpg">
+  <img width="360"  src="./images/position_1.png">
+  <img width="360"  src="./images/position_2.png">
+  <img width="360"  src="./images/position_3.png">
   <figcaption align = "center">Figure 1: First Position].</figcaption>
 </p>
 <br>
-
