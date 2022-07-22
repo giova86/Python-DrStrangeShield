@@ -1,8 +1,14 @@
 # Dr. Strange Shields
 Doctor Strange Shields using Python , Opencv & Mediapipe
 
+<br>
+<p align="center">
+  <img width="640"  src="./images/example.png">
+</p>  <figcaption style="align: right">Figure 1: First Position].</figcaption>
+<br>
+
 ## Python Version
-This code is tested to work with Python 3.9
+This code is tested to work with Python 3.9 on M1 architecture. 
 
 ## Environment
 
@@ -44,13 +50,22 @@ optional arguments:
 ```
 
 ## Usage
-In order to activate the shields you have to perform a "magical" sequence of hands position.
+- In order to activate the shields you have to perform a "magical" sequence of hands position.
 
 <br>
 <p align="center">
   <img width="360"  src="./images/position_1.png">
   <img width="360"  src="./images/position_2.png">
   <img width="360"  src="./images/position_3.png">
+  <figcaption align = "center">Figure 1: First Position].</figcaption>
+</p>
+<br>
+
+- In order to deactivate the shields you have to execute a "magical" hands position.
+
+<br>
+<p align="center">
+  <img width="360"  src="./images/position_1.png">
   <figcaption align = "center">Figure 1: First Position].</figcaption>
 </p>
 <br>
