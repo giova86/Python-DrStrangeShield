@@ -36,6 +36,7 @@ labels = np.array(model.classes_)  # put the entire alphabet in the future
 KEY_1 = False
 KEY_2 = False
 KEY_3 = False
+SHIELDS = False
 
 mp_holistic = mp.solutions.holistic
 #mp_drawing = mp.solutions.drawing_utils
@@ -54,7 +55,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
                           min_tracking_confidence=0.5) as holistic:
     while cap.isOpened():
         ret, frame = cap.read()
-        print(KEY_1, KEY_2, KEY_3)
+        print(SHIELDS, '-', KEY_1, KEY_2, KEY_3)
 
         ret_shield, frame_shield = shield.read()
         if ret_shield:
@@ -63,13 +64,10 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
             shield = cv2.VideoCapture(args.shield_video)
             ret_shield, frame_shield = shield.read()
 
-        #frame_shield = cv2.resize(frame_shield, (320,180))
-
         # make detection
         image, results = mediapipe_detection(frame, holistic)
 
-
-        hsv = cv2.cvtColor(frame_shield, cv2.COLOR_BGR2HSV)
+        #hsv = cv2.cvtColor(frame_shield, cv2.COLOR_BGR2HSV)
         black_screen = np.array([0,0,0])
         mask = cv2.inRange(frame_shield,black_screen,black_screen)
         res = cv2.bitwise_and(frame_shield, frame_shield, mask=mask)
@@ -80,115 +78,105 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
         xMinL, xMaxL, yMinL, yMaxL = get_center_lh(frame, results)
         xMinR, xMaxR, yMinR, yMaxR = get_center_rh(frame, results)
 
+        if SHIELDS and xMinL:
 
+            xc_lh = (xMaxL+xMinL)/2
+            yc_lh = (yMaxL+yMinL)/2
+            xc_lh = int(width*xc_lh)
+            yc_lh = int(height*yc_lh)
 
-        if xMinL:
-            if xMinR:
+            l_width_shield = int(width*(xMaxL-xMinL)/2*3.5)
+            l_height_shield = int(height*(yMaxL-yMinL)/2*3.5)
 
-                prediction = model.predict(np.array([points_detection(results)]))[0]
-                pred_prob = np.max(model.predict_proba(np.array([points_detection(results)])))
-                if (prediction == 'key_4') and (pred_prob > 0.85):
-                    KEY_1 = False
-                    KEY_2 = False
-                    KEY_3 = False
+            res2 = cv2.resize(res, (l_width_shield*2, l_height_shield*2))
 
-                if (prediction == 'key_1') and (pred_prob > 0.85):
-                    KEY_1 = True
-                elif (prediction == 'key_2') and (pred_prob > 0.85) and KEY_1:
-                    KEY_2 = True
-                elif (prediction == 'key_3') and (pred_prob > 0.85) and KEY_1 and KEY_2:
-                    KEY_3 = True
+            start_h = 0
+            start_w = 0
+            stop_h = l_height_shield*2
+            stop_w = l_width_shield*2
 
-                if KEY_1 and KEY_2 and KEY_3:
+            f_start_h = yc_lh-l_height_shield
+            f_stop_h = yc_lh+l_height_shield
+            f_start_w = xc_lh-l_width_shield
+            f_stop_w = xc_lh+l_width_shield
 
-                    xc_lh = (xMaxL+xMinL)/2
-                    yc_lh = (yMaxL+yMinL)/2
-                    xc_lh = int(width*xc_lh)
-                    yc_lh = int(height*yc_lh)
+            if yc_lh-l_height_shield < 0:
+                start_h = -yc_lh+l_height_shield
+                f_start_h = 0
+            if yc_lh+l_height_shield > height:
+                stop_h = l_height_shield + height - yc_lh
+                f_stop_h = height
+            if xc_lh-l_width_shield < 0:
+                start_w = -xc_lh+l_width_shield
+                f_start_w = 0
+            if xc_lh+l_width_shield > width:
+                stop_w = l_width_shield + width - xc_lh
+                f_stop_w = width
 
-                    l_width_shield = int(width*(xMaxL-xMinL)/2*3.5)
-                    l_height_shield = int(height*(yMaxL-yMinL)/2*3.5)
+            res2 = res2[start_h:stop_h, start_w:stop_w,:]
+            frame_shield =cv2.addWeighted(frame[f_start_h:f_stop_h,f_start_w:f_stop_w], alpha, res2, 1,1, frame)
+            frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
 
-                    res2 = cv2.resize(res, (l_width_shield*2, l_height_shield*2))
+        if SHIELDS and xMinR:
 
-                    start_h = 0
-                    start_w = 0
-                    stop_h = l_height_shield*2
-                    stop_w = l_width_shield*2
+            xc_rh = (xMaxR+xMinR)/2
+            yc_rh = (yMaxR+yMinR)/2
+            xc_rh = int(width*xc_rh)
+            yc_rh = int(height*yc_rh)
 
-                    f_start_h = yc_lh-l_height_shield
-                    f_stop_h = yc_lh+l_height_shield
-                    f_start_w = xc_lh-l_width_shield
-                    f_stop_w = xc_lh+l_width_shield
+            r_width_shield = int(width*(xMaxR-xMinR)/2*3.5)
+            r_height_shield = int(height*(yMaxR-yMinR)/2*3.5)
 
-                    if yc_lh-l_height_shield < 0:
-                        start_h = -yc_lh+l_height_shield
-                        f_start_h = 0
-                    if yc_lh+l_height_shield > height:
-                        stop_h = l_height_shield + height - yc_lh
-                        f_stop_h = height
-                    if xc_lh-l_width_shield < 0:
-                        start_w = -xc_lh+l_width_shield
-                        f_start_w = 0
-                    if xc_lh+l_width_shield > width:
-                        stop_w = l_width_shield + width - xc_lh
-                        f_stop_w = width
+            res3 = cv2.resize(res, (r_width_shield*2, r_height_shield*2))
 
-                    res2 = res2[start_h:stop_h, start_w:stop_w,:]
-                    frame_shield =cv2.addWeighted(frame[f_start_h:f_stop_h,f_start_w:f_stop_w], alpha, res2, 1,1, frame)
-                    frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
+            start_h = 0
+            start_w = 0
+            stop_h = r_height_shield*2
+            stop_w = r_width_shield*2
 
-        xMinR, xMaxR, yMinR, yMaxR = get_center_rh(frame, results)
-        if xMinR:
+            f_start_h = yc_rh-r_height_shield
+            f_stop_h = yc_rh+r_height_shield
+            f_start_w = xc_rh-r_width_shield
+            f_stop_w = xc_rh+r_width_shield
 
+            if yc_rh-r_height_shield < 0:
+                start_h = -yc_rh+r_height_shield
+                f_start_h = 0
+            if yc_rh+r_height_shield > height:
+                stop_h = r_height_shield + height - yc_rh
+                f_stop_h = height
+            if xc_rh-r_width_shield < 0:
+                start_w = -xc_rh+r_width_shield
+                f_start_w = 0
+            if xc_rh+r_width_shield > width:
+                stop_w = r_width_shield + width - xc_rh
+                f_stop_w = width
+
+            res3 = res3[start_h:stop_h, start_w:stop_w,:]
+            frame_shield =cv2.addWeighted(frame[f_start_h:f_stop_h,f_start_w:f_stop_w], alpha, res3, 1,1, frame)
+            frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
+
+        if xMinL and xMinR and SHIELDS:
             prediction = model.predict(np.array([points_detection(results)]))[0]
             pred_prob = np.max(model.predict_proba(np.array([points_detection(results)])))
+
+            if (prediction == 'key_4') and (pred_prob > 0.85):
+                KEY_1 = False
+                KEY_2 = False
+                KEY_3 = False
+                SHIELDS = False
+
+        if xMinL and xMinR and (not SHIELDS):
+            prediction = model.predict(np.array([points_detection(results)]))[0]
+            pred_prob = np.max(model.predict_proba(np.array([points_detection(results)])))
+
             if (prediction == 'key_1') and (pred_prob > 0.85):
                 KEY_1 = True
             elif (prediction == 'key_2') and (pred_prob > 0.85) and KEY_1:
                 KEY_2 = True
             elif (prediction == 'key_3') and (pred_prob > 0.85) and KEY_1 and KEY_2:
                 KEY_3 = True
-
-            if KEY_1 and KEY_2 and KEY_3:
-
-                xc_rh = (xMaxR+xMinR)/2
-                yc_rh = (yMaxR+yMinR)/2
-                xc_rh = int(width*xc_rh)
-                yc_rh = int(height*yc_rh)
-
-                r_width_shield = int(width*(xMaxR-xMinR)/2*3.5)
-                r_height_shield = int(height*(yMaxR-yMinR)/2*3.5)
-
-                res3 = cv2.resize(res, (r_width_shield*2, r_height_shield*2))
-
-                start_h = 0
-                start_w = 0
-                stop_h = r_height_shield*2
-                stop_w = r_width_shield*2
-
-                f_start_h = yc_rh-r_height_shield
-                f_stop_h = yc_rh+r_height_shield
-                f_start_w = xc_rh-r_width_shield
-                f_stop_w = xc_rh+r_width_shield
-
-                if yc_rh-r_height_shield < 0:
-                    start_h = -yc_rh+r_height_shield
-                    f_start_h = 0
-                if yc_rh+r_height_shield > height:
-                    stop_h = r_height_shield + height - yc_rh
-                    f_stop_h = height
-                if xc_rh-r_width_shield < 0:
-                    start_w = -xc_rh+r_width_shield
-                    f_start_w = 0
-                if xc_rh+r_width_shield > width:
-                    stop_w = r_width_shield + width - xc_rh
-                    f_stop_w = width
-
-                res3 = res3[start_h:stop_h, start_w:stop_w,:]
-                frame_shield =cv2.addWeighted(frame[f_start_h:f_stop_h,f_start_w:f_stop_w], alpha, res3, 1,1, frame)
-                frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
-
+                SHIELDS = True
 
 
         cv2.imshow('Dr. Strange shields', frame)
