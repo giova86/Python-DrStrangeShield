@@ -7,6 +7,7 @@ import os
 from utils import mediapipe_detection, draw_landmarks, draw_landmarks_custom, draw_limit_rh, draw_limit_lh, check_detection, get_center_lh,get_center_rh, points_detection
 from argparse import ArgumentParser
 import pickle
+from datetime import datetime, timedelta
 
 # - INPUT PARAMETERS ------------------------------- #
 parser = ArgumentParser()
@@ -187,17 +188,29 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
                 KEY_3 = False
                 SHIELDS = False
 
-        if xMinL and xMinR and (not SHIELDS):
+        elif xMinL and xMinR and (not SHIELDS):
             prediction = model.predict(np.array([points_detection(results)]))[0]
             pred_prob = np.max(model.predict_proba(np.array([points_detection(results)])))
 
             if (prediction == 'key_1') and (pred_prob > 0.85):
+                t1 = datetime.now()
                 KEY_1 = True
             elif (prediction == 'key_2') and (pred_prob > 0.85) and KEY_1:
-                KEY_2 = True
+                t2 = datetime.now()
+                if t1 + timedelta(seconds=2) > t2:
+                    KEY_2 = True
+                else:
+                    KEY_1 = False
+                    KEY_2 = False
+
             elif (prediction == 'key_3') and (pred_prob > 0.85) and KEY_1 and KEY_2:
-                KEY_3 = True
-                SHIELDS = True
+                t3 =datetime.now()
+                if t2 + timedelta(seconds=2) > t3:
+                    KEY_3 = True
+                    SHIELDS = True
+                else:
+                    KEY_1 = False
+                    KEY_2 = False
 
 
         cv2.imshow('Dr. Strange shields', frame)
