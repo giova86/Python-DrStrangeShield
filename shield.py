@@ -44,7 +44,7 @@ mp_holistic = mp.solutions.holistic
 # cap = cv2.VideoCapture('video.mp4')
 cap = cv2.VideoCapture(args.camera)
 shield = cv2.VideoCapture(args.shield_video)
-# shield_effect = cv2.VideoCapture('shield_effect.mp4')
+# shield_eres_effectffect = cv2.VideoCapture('shield_effect.mp4')
 
 #cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 #cap.set(cv2.CAP_PROP_FRAME_HEIGHT,1080)
@@ -104,7 +104,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
             l_height_shield = int(height*(yMaxL-yMinL)/2*3.5)
 
             res2 = cv2.resize(res, (l_width_shield*2, l_height_shield*2))
-            res_effect = cv2.resize(res_effect, (l_width_shield*2, l_height_shield*2))
+            #res_effect = cv2.resize(res_effect, (l_width_shield*2, l_height_shield*2))
 
             start_h = 0
             start_w = 0
@@ -130,13 +130,13 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
                 f_stop_w = width
 
             res2 = res2[start_h:stop_h, start_w:stop_w,:]
-            res_effect = res_effect[start_h:stop_h, start_w:stop_w,:]
+            #res_effect = res_effect[start_h:stop_h, start_w:stop_w,:]
 
             frame_shield =cv2.addWeighted(frame[f_start_h:f_stop_h,f_start_w:f_stop_w], alpha, res2, 1,1, frame)
             frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
 
-            frame_shield =cv2.addWeighted(frame[f_start_h:f_stop_h,f_start_w:f_stop_w], alpha, res_effect, 1,1, frame)
-            frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
+            #frame_shield =cv2.addWeighted(frame[f_start_h:f_stop_h,f_start_w:f_stop_w], alpha, res_effect, 1,1, frame)
+            #frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
 
         if SHIELDS and xMinR:
 
