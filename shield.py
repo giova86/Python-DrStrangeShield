@@ -4,7 +4,7 @@ import time
 import mediapipe as mp
 import numpy as np
 import os
-from utils import mediapipe_detection, draw_landmarks, draw_landmarks_custom, draw_limit_rh, draw_limit_lh, check_detection, get_center_lh,get_center_rh, points_detection
+from utils import mediapipe_detection, get_center_lh,get_center_rh, points_detection
 from argparse import ArgumentParser
 import pickle
 from datetime import datetime, timedelta
