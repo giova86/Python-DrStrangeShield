@@ -44,6 +44,7 @@ mp_holistic = mp.solutions.holistic
 # cap = cv2.VideoCapture('video.mp4')
 cap = cv2.VideoCapture(args.camera)
 shield = cv2.VideoCapture(args.shield_video)
+# shield_effect = cv2.VideoCapture('shield_effect.mp4')
 
 #cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 #cap.set(cv2.CAP_PROP_FRAME_HEIGHT,1080)
@@ -64,6 +65,15 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
             shield = cv2.VideoCapture(args.shield_video)
             ret_shield, frame_shield = shield.read()
 
+        # ret_shield_effect, frame_shield_effect = shield_effect.read()
+        # if ret_shield_effect:
+        #     frame_shield_effect = cv2.resize(frame_shield_effect, (1280,720), interpolation = cv2.INTER_AREA)
+        #     pass
+        # else:
+        #     shield_effect = cv2.VideoCapture('shield_effect.mp4')
+        #     ret_shield_effect, frame_shield_effect = shield.read()
+        #     frame_shield_effect = cv2.resize(frame_shield_effect, (1280,720), interpolation = cv2.INTER_AREA)
+
         # make detection
         image, results = mediapipe_detection(frame, holistic)
 
@@ -74,6 +84,11 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
         res = frame_shield - res
         alpha=1
 
+        # black_screen = np.array([0,0,0])
+        # mask = cv2.inRange(frame_shield_effect,black_screen,black_screen)
+        # res_effect = cv2.bitwise_and(frame_shield_effect, frame_shield_effect, mask=mask)
+        # res_effect = frame_shield_effect - res_effect
+        # alpha=1
 
         xMinL, xMaxL, yMinL, yMaxL = get_center_lh(frame, results)
         xMinR, xMaxR, yMinR, yMaxR = get_center_rh(frame, results)
@@ -89,6 +104,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
             l_height_shield = int(height*(yMaxL-yMinL)/2*3.5)
 
             res2 = cv2.resize(res, (l_width_shield*2, l_height_shield*2))
+            res_effect = cv2.resize(res_effect, (l_width_shield*2, l_height_shield*2))
 
             start_h = 0
             start_w = 0
@@ -114,7 +130,12 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
                 f_stop_w = width
 
             res2 = res2[start_h:stop_h, start_w:stop_w,:]
+            res_effect = res_effect[start_h:stop_h, start_w:stop_w,:]
+
             frame_shield =cv2.addWeighted(frame[f_start_h:f_stop_h,f_start_w:f_stop_w], alpha, res2, 1,1, frame)
+            frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
+
+            frame_shield =cv2.addWeighted(frame[f_start_h:f_stop_h,f_start_w:f_stop_w], alpha, res_effect, 1,1, frame)
             frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
 
         if SHIELDS and xMinR:
