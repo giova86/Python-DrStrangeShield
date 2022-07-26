@@ -39,6 +39,8 @@ KEY_2 = False
 KEY_3 = False
 SHIELDS = False
 
+scale = 1.5
+
 mp_holistic = mp.solutions.holistic
 #mp_drawing = mp.solutions.drawing_utils
 
@@ -98,8 +100,8 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
             xc_lh = int(width*xc_lh)
             yc_lh = int(height*yc_lh)
 
-            l_width_shield = int(width*(xMaxL-xMinL)/2*3.5)
-            l_height_shield = int(height*(yMaxL-yMinL)/2*3.5)
+            l_width_shield = int(width*(xMaxL-xMinL)/2*3.5*scale)
+            l_height_shield = int(height*(yMaxL-yMinL)/2*2*scale)
 
             res2 = cv2.resize(res, (l_width_shield*2, l_height_shield*2))
             # res_effect = cv2.resize(res_effect, (l_width_shield*2, l_height_shield*2))
@@ -143,8 +145,8 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
             xc_rh = int(width*xc_rh)
             yc_rh = int(height*yc_rh)
 
-            r_width_shield = int(width*(xMaxR-xMinR)/2*3.5)
-            r_height_shield = int(height*(yMaxR-yMinR)/2*3.5)
+            r_width_shield = int(width*(xMaxR-xMinR)/2*3.5*scale)
+            r_height_shield = int(height*(yMaxR-yMinR)/2*2*scale)
 
             res3 = cv2.resize(res, (r_width_shield*2, r_height_shield*2))
 
