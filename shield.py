@@ -76,7 +76,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
         #     frame_shield_effect = cv2.resize(frame_shield_effect, (1280,720), interpolation = cv2.INTER_AREA)
 
         # make detection
-        image, results = mediapipe_detection(frame, holistic)
+        frame, results = mediapipe_detection(frame, holistic)
         xMinL, xMaxL, yMinL, yMaxL = get_center_lh(frame, results)
         xMinR, xMaxR, yMinR, yMaxR = get_center_rh(frame, results)
 
