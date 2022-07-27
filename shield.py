@@ -4,7 +4,7 @@ import time
 import mediapipe as mp
 import numpy as np
 import os
-from utils import mediapipe_detection, get_center_lh,get_center_rh, points_detection
+from utils import mediapipe_detection, get_center_lh,get_center_rh, points_detection, points_detection_hands
 from argparse import ArgumentParser
 import pickle
 from datetime import datetime, timedelta
@@ -178,8 +178,8 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
             frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
 
         if xMinL and xMinR and SHIELDS:
-            prediction = model.predict(np.array([points_detection(results)]))[0]
-            pred_prob = np.max(model.predict_proba(np.array([points_detection(results)])))
+            prediction = model.predict(np.array([points_detection_hands(results)]))[0]
+            pred_prob = np.max(model.predict_proba(np.array([points_detection_hands(results)])))
 
             if (prediction == 'key_4') and (pred_prob > 0.85):
                 KEY_1 = False
@@ -188,8 +188,8 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
                 SHIELDS = False
 
         elif xMinL and xMinR and (not SHIELDS):
-            prediction = model.predict(np.array([points_detection(results)]))[0]
-            pred_prob = np.max(model.predict_proba(np.array([points_detection(results)])))
+            prediction = model.predict(np.array([points_detection_hands(results)]))[0]
+            pred_prob = np.max(model.predict_proba(np.array([points_detection_hands(results)])))
 
             if (prediction == 'key_1') and (pred_prob > 0.85):
                 t1 = datetime.now()

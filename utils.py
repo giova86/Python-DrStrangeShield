@@ -152,15 +152,35 @@ def points_detection(results):
     return rh
 
 def points_detection_hands(results):
-    xMax = max([i.x for i in results.right_hand_landmarks.landmark])
-    xMin = min([i.x for i in results.right_hand_landmarks.landmark])
-    yMax = max([i.y for i in results.right_hand_landmarks.landmark])
-    yMin = min([i.y for i in results.right_hand_landmarks.landmark])
+    '''
+    Questa funzione estrae dai risultati del modello holistic le coordinate di tutti i punti di entrambe le mani.
+    Le coordinate (x,y), inzialmente espresse tra 0 e 1 rispetto allo schermo vengono poi riscalate rispetto
+    al min/max delle coordinate
+    '''
+    xMaxR = max([i.x for i in results.right_hand_landmarks.landmark])
+    xMinR = min([i.x for i in results.right_hand_landmarks.landmark])
+    yMaxR = max([i.y for i in results.right_hand_landmarks.landmark])
+    yMinR = min([i.y for i in results.right_hand_landmarks.landmark])
+
+    xMaxL = max([i.x for i in results.left_hand_landmarks.landmark])
+    xMinL = min([i.x for i in results.left_hand_landmarks.landmark])
+    yMaxL = max([i.y for i in results.left_hand_landmarks.landmark])
+    yMinL = min([i.y for i in results.left_hand_landmarks.landmark])
+
+    xMin = min([xMinR, xMinL])
+    xMax = max([xMaxR, xMaxL])
+    yMin = min([yMinR, yMinL])
+    yMax = max([yMaxR, yMaxL])
+
     rh = np.array([[points.x, points.y, points.z] for points in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
+    lh = np.array([[points.x, points.y, points.z] for points in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
+
     for i in np.arange(0, 63, 3):
         rh[i]=(rh[i]-xMin)/(xMax-xMin)
     for i in np.arange(1, 63, 3):
         rh[i]=(rh[i]-yMin)/(yMax-yMin)
+
+    con = np.concatenate((rh, lh))
 
     # xMax = max([i.x for i in results.left_hand_landmarks.landmark])
     # xMin = min([i.x for i in results.left_hand_landmarks.landmark])
@@ -176,4 +196,4 @@ def points_detection_hands(results):
     # po = np.array([[points.x, points.y, points.z] for points in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(99)
     # return np.concatenate([lh, rh, po])
 
-    return rh
+    return con
