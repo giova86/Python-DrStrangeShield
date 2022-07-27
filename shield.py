@@ -56,7 +56,8 @@ width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
 with mp_holistic.Holistic(min_detection_confidence=0.5,
-                          min_tracking_confidence=0.5) as holistic:
+                          min_tracking_confidence=0.5,
+                          model_complexity=0) as holistic:
     while cap.isOpened():
         ret, frame = cap.read()
         print(SHIELDS, '-', KEY_1, KEY_2, KEY_3)
