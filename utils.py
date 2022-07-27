@@ -14,8 +14,8 @@ def mediapipe_detection(image, model):
     image.flags.writeable = False
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     results = model.process(image)
-    #image.flags.writeable = True
-    #image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    image.flags.writeable = True
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     return image, results
 
 def draw_landmarks(image, results):
