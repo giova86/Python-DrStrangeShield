@@ -4,7 +4,7 @@ Doctor Strange Shields using Python , Opencv & Mediapipe
 <br>
 <p align="center">
   <img width="640"  src="./images/example.png">
-</p>  <figcaption style="align: right">YuoTube URL: https://www.youtube.com/watch?v=pXJt6sXhm_w.</figcaption>
+</p>  <figcaption style="align: right">YouTube URL: https://www.youtube.com/watch?v=pXJt6sXhm_w.</figcaption>
 <br>
 
 ## Python Version
