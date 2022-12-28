@@ -1,4 +1,4 @@
-#!/Users/gbocchi/GitHub/dev_pers/Python-DrStrangeShield/venv_x86/bin/python3.9
+#!/Users/gbocchi/GitHub/dev_pers/Python-DrStrangeShield/venv_x86/bin/python3.10
 # -*- coding: utf-8 -*-
 import re
 import sys
