@@ -8,7 +8,7 @@ from utils import mediapipe_detection, get_center_lh,get_center_rh, points_detec
 from argparse import ArgumentParser
 import pickle
 from datetime import datetime, timedelta
-
+import time
 import pyvirtualcam
 from pyvirtualcam import PixelFormat
 
@@ -33,11 +33,13 @@ args = parser.parse_args()
 
 current_directory = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/")
 
+# --- start camera ---
+cap = cv2.VideoCapture(args.camera)
+time.sleep(5)
 
-# load svm model
+# --- load svm model ---
 model = pickle.load(open(current_directory + '/' + args.ML_model, 'rb'))
 labels = np.array(model.classes_)  # put the entire alphabet in the future
-
 
 KEY_1 = False
 KEY_2 = False
@@ -49,16 +51,14 @@ scale = 1.5
 mp_holistic = mp.solutions.holistic
 #mp_drawing = mp.solutions.drawing_utils
 
-# cap = cv2.VideoCapture('video.mp4')
-cap = cv2.VideoCapture(args.camera)
+# --- load shield video ---
 shield = cv2.VideoCapture(current_directory + '/' + args.shield_video)
-# shield_effect = cv2.VideoCapture('shield_effect.mp4')
 
-#cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-#cap.set(cv2.CAP_PROP_FRAME_HEIGHT,1080)
-
+# --- get width and height from camera
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+black_screen = np.array([0,0,0])
 
 with mp_holistic.Holistic(min_detection_confidence=0.5,
                           min_tracking_confidence=0.5,
@@ -92,17 +92,11 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
             xMinR, xMaxR, yMinR, yMaxR = get_center_rh(frame, results)
 
             #hsv = cv2.cvtColor(frame_shield, cv2.COLOR_BGR2HSV)
-            black_screen = np.array([0,0,0])
+            # black_screen = np.array([0,0,0])
             mask = cv2.inRange(frame_shield,black_screen,black_screen)
             res = cv2.bitwise_and(frame_shield, frame_shield, mask=mask)
             res = frame_shield - res
             alpha=1
-
-            # black_screen = np.array([0,0,0])
-            # mask = cv2.inRange(frame_shield_effect,black_screen,black_screen)
-            # res_effect = cv2.bitwise_and(frame_shield_effect, frame_shield_effect, mask=mask)
-            # res_effect = frame_shield_effect - res_effect
-            # alpha=1
 
             if SHIELDS and xMinL:
 
@@ -197,6 +191,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
                     KEY_2 = False
                     KEY_3 = False
                     SHIELDS = False
+
 
             elif xMinL and xMinR and (not SHIELDS):
                 prediction = model.predict(np.array([points_detection_hands(results)]))[0]
