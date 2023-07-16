@@ -264,7 +264,7 @@ def select_webcam_and_open():
 
     # Aggiungiamo un'immagine sopra i bottoni
     try:
-        img = PhotoImage(file='/Users/gbocchi/GitHub/dev_pers/Python-DrStrangeShield/images/title.png')
+        img = PhotoImage(file='/Users/gbocchi/GitHub/dev_pers/Python-DrStrangeShield/title.png')
         image_label = tk.Label(popup, image=img)
         image_label.pack(pady=10,padx=100)
     except tk.TclError:
