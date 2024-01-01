@@ -21,7 +21,7 @@ pip install -r requirements.txt
 ## How to
 Run
 ```
-python shield.py
+python shield_local.py
 ```
 Optional Arguments
 ```
