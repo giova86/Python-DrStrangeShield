@@ -22,7 +22,7 @@ parser.add_argument("-dc", "--det_conf", dest="min_detection_confidence", defaul
                     help="Threshold for prediction. A number between 0 and 1. default is 0.5")
 parser.add_argument("-tc", "--trk_conf", dest="min_tracking_confidence", default=0.5, type=float,
                     help="Threshold for prediction. A number between 0 and 1. default is 0.5")
-parser.add_argument("-c", "--camera_id", dest="camera", default=1, type=int,
+parser.add_argument("-c", "--camera_id", dest="camera", default=0, type=int,
                     help="ID of the camera. An integer between 0 and N. Default is 1")
 parser.add_argument("-s", "--shield", dest="shield_video", default='effects/shield.mp4',
                     help="PATH of the video FILE.", metavar="FILE")
