@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 import time
 import pyvirtualcam
 from pyvirtualcam import PixelFormat
+import signal
+import sys
 
 # - INPUT PARAMETERS ------------------------------- #
 parser = ArgumentParser()
@@ -26,10 +28,43 @@ parser.add_argument("-c", "--camera_id", dest="camera", default=0, type=int,
                     help="ID of the camera. An integer between 0 and N. Default is 1")
 parser.add_argument("-s", "--shield", dest="shield_video", default='effects/shield.mp4',
                     help="PATH of the video FILE.", metavar="FILE")
-
+parser.add_argument("-o", "--output", dest="output_mode", default='both',
+                    choices=['window', 'virtual', 'both'],
+                    help="Output mode: 'window' for OpenCV window only, 'virtual' for virtual camera only, 'both' for both outputs. Default is 'both'")
 
 args = parser.parse_args()
 # -------------------------------------------------- #
+
+# Variabili globali per la gestione della chiusura
+cap = None
+cam = None
+show_window = False
+
+def signal_handler(sig, frame):
+    """Gestisce l'interruzione Ctrl+C per una chiusura pulita"""
+    print("\n\n" + "="*60)
+    print("\n🛑 Interruzione ricevuta (Ctrl+C)")
+    print("🧹 Pulizia delle risorse in corso...")
+
+    # Cleanup delle risorse
+    if cap:
+        cap.release()
+        print("  ✅ Camera rilasciata")
+
+    if show_window:
+        cv2.destroyAllWindows()
+        print("  ✅ Finestre OpenCV chiuse")
+
+    if cam:
+        cam.close()
+        print("  ✅ Virtual camera chiusa")
+
+    print("\n🏁 Applicazione terminata correttamente\n")
+    print("="*60)
+    sys.exit(0)
+
+# Registra il gestore del segnale Ctrl+C
+signal.signal(signal.SIGINT, signal_handler)
 
 current_directory = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/")
 
@@ -60,31 +95,68 @@ height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
 black_screen = np.array([0,0,0])
 
+# Verifica modalità di output
+show_window = args.output_mode in ['window', 'both']
+use_virtual_cam = args.output_mode in ['virtual', 'both']
+
+print("\n" + "="*60)
+print("🛡️  DR. STRANGE SHIELDS - GESTURE CONTROL SYSTEM 🛡️")
+print("="*60)
+print(f"\n📹 Camera ID: {args.camera}")
+print(f"🤖 ML Model: {args.ML_model}")
+print(f"🎯 Prediction Threshold: {args.threshold_prediction}")
+print(f"🔍 Detection Confidence: {args.min_detection_confidence}")
+print(f"📊 Tracking Confidence: {args.min_tracking_confidence}")
+print(f"🎬 Shield Video: {args.shield_video}\n")
+print("-" * 60)
+print(f"\n📺 Output Mode: {args.output_mode.upper()}\n")
+if show_window:
+    print("  ✅ OpenCV Window: ENABLED")
+else:
+    print("  ❌ OpenCV Window: DISABLED")
+if use_virtual_cam:
+    print("  ✅ Virtual Camera: ENABLED\n")
+else:
+    print("  ❌ Virtual Camera: DISABLED\n")
+print("-" * 60)
+
 with mp_holistic.Holistic(min_detection_confidence=0.5,
                           min_tracking_confidence=0.5,
                           model_complexity=0) as holistic:
 
-    with pyvirtualcam.Camera(width, height, 30, fmt=PixelFormat.BGR) as cam:
-        print()
-        print('Virtual camera device: ' + cam.device)
-        print()
+    # Inizializza la virtual camera solo se necessario
+    if use_virtual_cam:
+        cam = pyvirtualcam.Camera(width, height, 30, fmt=PixelFormat.BGR)
+        print(f"\n🎥 Virtual Camera Device: {cam.device}")
+        print("🚀 System Ready! Starting gesture detection...")
+        print("📋 Gesture Sequence: KEY_1 → KEY_2 → KEY_3 (activate shields)")
+        print("📋 Shield Deactivation: KEY_4")
+        print("⌨️  Press 'q' to quit" + (" (in OpenCV window)" if show_window else "") + " or Ctrl+C\n")
+        print("="*60 + "\n")
+    else:
+        cam = None
+        print("🚀 System Ready! Starting gesture detection...")
+        print("📋 Gesture Sequence: KEY_1 → KEY_2 → KEY_3 (activate shields)")
+        print("📋 Shield Deactivation: KEY_4")
+        print("⌨️  Press 'q' to quit" + (" (in OpenCV window)" if show_window else "") + " or Ctrl+C")
+        print("="*60 + "\n")
+
+    try:
         while cap.isOpened():
             ret, frame = cap.read()
-            print(SHIELDS, '-', KEY_1, KEY_2, KEY_3)
+
+            # Status display con formato migliorato
+            status_shields = "🛡️ ON " if SHIELDS else "🛡️ OFF"
+            status_k1 = "🔑1✅" if KEY_1 else "🔑1❌"
+            status_k2 = "🔑2✅" if KEY_2 else "🔑2❌"
+            status_k3 = "🔑3✅" if KEY_3 else "🔑3❌"
+
+            print(f"\r{status_shields} | {status_k1} {status_k2} {status_k3}", end="", flush=True)
 
             ret_shield, frame_shield = shield.read()
             if not ret_shield:
                 shield = cv2.VideoCapture(current_directory + '/' + args.shield_video)
                 ret_shield, frame_shield = shield.read()
-
-            # ret_shield_effect, frame_shield_effect = shield_effect.read()
-            # if ret_shield_effect:
-            #     frame_shield_effect = cv2.resize(frame_shield_effect, (1280,720), interpolation = cv2.INTER_AREA)
-            #     pass
-            # else:
-            #     shield_effect = cv2.VideoCapture('shield_effect.mp4')
-            #     ret_shield_effect, frame_shield_effect = shield.read()
-            #     frame_shield_effect = cv2.resize(frame_shield_effect, (1280,720), interpolation = cv2.INTER_AREA)
 
             # make detection
             frame, results = mediapipe_detection(frame, holistic)
@@ -109,7 +181,6 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
                 l_height_shield = int(height*(yMaxL-yMinL)/2*2*scale)
 
                 res2 = cv2.resize(res, (l_width_shield*2, l_height_shield*2))
-                # res_effect = cv2.resize(res_effect, (l_width_shield*2, l_height_shield*2))
 
                 start_h = 0
                 start_w = 0
@@ -135,13 +206,9 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
                     f_stop_w = width
 
                 res2 = res2[start_h:stop_h, start_w:stop_w,:]
-                # res_effect = res_effect[start_h:stop_h, start_w:stop_w,:]
 
                 frame_shield =cv2.addWeighted(frame[f_start_h:f_stop_h,f_start_w:f_stop_w], alpha, res2, 1,1, frame)
                 frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
-
-                # frame_shield =cv2.addWeighted(frame[f_start_h:f_stop_h,f_start_w:f_stop_w], alpha, res_effect, 1,1, frame)
-                # frame[f_start_h:f_stop_h,f_start_w:f_stop_w] = frame_shield
 
             if SHIELDS and xMinR:
 
@@ -192,7 +259,6 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
                     KEY_3 = False
                     SHIELDS = False
 
-
             elif xMinL and xMinR and (not SHIELDS):
                 prediction = model.predict(np.array([points_detection_hands(results)]))[0]
                 pred_prob = np.max(model.predict_proba(np.array([points_detection_hands(results)])))
@@ -217,13 +283,38 @@ with mp_holistic.Holistic(min_detection_confidence=0.5,
                         KEY_1 = False
                         KEY_2 = False
 
+            # Mostra la finestra OpenCV solo se richiesto
+            if show_window:
+                cv2.imshow('Dr. Strange shields', frame)
 
-            cv2.imshow('Dr. Strange shields', frame)
-            cam.send(frame)
-            cam.sleep_until_next_frame()
+            # Invia alla virtual camera solo se richiesto
+            if use_virtual_cam and cam:
+                cam.send(frame)
+                cam.sleep_until_next_frame()
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            # Gestione tasti solo se la finestra è attiva
+            if show_window and cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+            elif not show_window:
+                # Se non c'è finestra, usa un piccolo delay per evitare loop troppo veloce
+                time.sleep(0.033)  # ~30 FPS
 
-        cap.release()
-        cv2.destroyAllWindows()
+    except KeyboardInterrupt:
+        # Gestione alternativa del Ctrl+C (nel caso il signal handler non funzioni)
+        print("\n\n🛑 Interruzione ricevuta - Chiusura in corso...")
+    except Exception as e:
+        print(f"\n❌ Errore durante l'esecuzione: {e}")
+    finally:
+        # Cleanup finale - assicura che tutto venga pulito correttamente
+        print("\n\n" + "="*60)
+        print("\n🧹 Cleanup finale...\n")
+        if cap:
+            cap.release()
+            print("  ✅ Camera rilasciata")
+        if show_window:
+            cv2.destroyAllWindows()
+            print("  ✅ Finestre OpenCV chiuse")
+        if cam:
+            cam.close()
+            print("  ✅ Virtual camera chiusa")
+        print("\n🏁 Applicazione terminata\n")
